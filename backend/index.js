@@ -24,10 +24,14 @@ connection.connect((error) =>{
 
 // IMPORT ROUTERS 
 import UserRoute from './routes/UserRoutes.js';
+import TaskRoute from './routes/TaskRoutes.js';
+import OptionRouter from './routes/OptionRouter.js';
+import AuthMiddleware from './middlewares/Auth.js';
 
 // ROUTES
 app.use('/api', UserRoute);
-
+app.use('/api/task',AuthMiddleware.checkToken, TaskRoute);
+app.use('/api', OptionRouter);
 
 // RUN SERVER
 app.listen( process.env.sv_port || 3000, ()=>{

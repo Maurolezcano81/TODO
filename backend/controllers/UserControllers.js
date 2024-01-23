@@ -1,6 +1,5 @@
 import { connection } from "../config/db.js";
-import bcrypt from 'bcryptjs';
-import jsonwebtoken from 'jsonwebtoken';
+import AuthMiddleware from "../middlewares/Auth.js";
 
 const signUp = async (req, res) => {
 
@@ -49,7 +48,7 @@ const signUp = async (req, res) => {
 
                 // Encriptar password
 
-                encryptPwd(pwd)
+                AuthMiddleware.encryptPwd(pwd)
                     .then(pwdEncripted => {
                         if (!pwdEncripted) {
                             res.status(500).json({
@@ -108,14 +107,13 @@ const signIn = (req, res) => {
                     name_user: loginResult[0].name_user,
                     lastname_user: loginResult[0].lastname_user,
                     email_user: loginResult[0].email_user,
-                    pwd_user: loginResult[0].pwd_user
                 }
 
                 console.log(data);
-                const token = createToken(data);
+                const token = AuthMiddleware.createToken(data);
 
                 try {
-                    const passwordMatch = await comparePassword(pwd, hashedPassword);
+                    const passwordMatch = await AuthMiddleware.comparePassword(pwd, hashedPassword);
                     if (passwordMatch) {
                         return res.status(200).send({
                             message: 'Sesión iniciada correctamente',
@@ -145,40 +143,6 @@ const signIn = (req, res) => {
         });
     }
 };
-
-// Funcion para hashear un password
-const encryptPwd = (pwd) => {
-    try {
-
-        const pwdHashed = bcrypt.hash(pwd, 10);
-        return pwdHashed;
-    } catch (error) {
-        console.error('Error al encriptar clave: ' + error.message);
-    }
-}
-
-
-// Funcion para comparar el password hasheado
-const comparePassword = (pwd, pwdHashed) =>{
-    try{
-        const pwdMatch = bcrypt.compare(pwd, pwdHashed);
-        return pwdMatch;
-    } catch (error) {
-        console.error('Error al comparar clave: ' + error.message);
-    }
-}
-
-// Funcion para crear un token
-const createToken = (data) =>{
-    try{
-
-        const token = jsonwebtoken.sign(data, process.env.token_key);
-        return token;
-
-    } catch (error) {
-        console.error('Error al crear el token');
-    }
-}
 
 
 // Preparo un objeto con las funciones a exportar;
